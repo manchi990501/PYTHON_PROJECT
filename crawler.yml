@@ -1,0 +1,33 @@
+name: Daily GPU Price Crawler
+
+on:
+  schedule:
+    # UTC 기준 14:55분은 한국 시간(KST)으로 23:55분입니다. 자정 시점에 맞춘 크론탭 설정
+    - cron: '55 14 * * *'
+  workflow_dispatch: # 개발 중 수동으로 즉시 실행하고 싶을 때 사용하는 버튼 활성화
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 레포지토리 코드 체크아웃
+      uses: actions/checkout@v4
+
+    - name: 파이썬 환경 설정
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: 필수 라이브러리 설치
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4 supabase
+
+    - name: 크롤러 스크립트 실행
+      env:
+        # GitHub Repository Settings -> Secrets and variables에서 등록해야 하는 보안 키
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      run: |
+        python crawler.py
